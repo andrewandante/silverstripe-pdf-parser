@@ -3,7 +3,7 @@
     "type": "silverstripe-vendormodule",
     "description": "Adds PDFParser package to extract contents of PDF files for search etc.",
     "require": {
-        "silverstripe/textextraction": "^3.0.0",
+        "silverstripe/textextraction": "^4.0",
         "smalot/pdfparser": "^1.0.0"
     },
     "license": "MIT",
