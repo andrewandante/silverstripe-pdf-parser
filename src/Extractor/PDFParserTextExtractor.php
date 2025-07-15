@@ -15,6 +15,20 @@ class PDFParserTextExtractor extends FileTextExtractor
     use Extensible;
 
     /**
+     * Number of page to parse. Default to all.
+     *
+     * @config
+     */
+    private static ?int $pages_to_parse = null;
+
+    /**
+     * Convert into single line and remove extra white spaces.
+     *
+     * @config
+     */
+    private static bool $convert_to_single_line = false;
+
+    /**
      * @inheritDoc
      */
     public function isAvailable(): bool
@@ -47,14 +61,34 @@ class PDFParserTextExtractor extends FileTextExtractor
     }
 
     /**
+     * Get instance of PDF parser
+     */
+    protected function getParser(): Parser
+    {
+        $pdfParser = new Parser();
+
+        $this->extend('onInitParser', $pdfParser);
+
+        return $pdfParser;
+    }
+
+    /**
      * @inheritDoc
      */
     public function getContent($file): string
     {
-        $pdfParser = new Parser();
+        $pdfParser = $this->getParser();
+
         try {
             $path = $file instanceof File ? self::getPathFromFile($file) : $file;
-            $text = $pdfParser->parseFile($path)->getText();
+            $text = $pdfParser->parseFile($path)->getText(self::config()->get('pages_to_parse'));
+
+            // Remove new lines and spaces
+            if (self::config()->get('convert_to_single_line')) {
+                $text = str_replace("\n", ' ', $text);
+                $text = preg_replace('/\s+/', ' ', $text);
+            }
+
             $this->extend('updateParsedText', $text);
             return $text;
         } catch (Throwable $e) {
